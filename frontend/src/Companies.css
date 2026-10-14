@@ -1,0 +1,69 @@
+.company-form {
+  display: grid;
+  gap: 16px;
+  max-width: 600px;
+}
+
+.company-form label {
+  margin: 0;
+}
+
+.company-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 9px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: #172033;
+  font: inherit;
+  resize: vertical;
+}
+
+.company-form textarea:focus {
+  outline: 3px solid #dbeafe;
+  border-color: #285ac2;
+}
+
+.company-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 20px;
+}
+
+.company-card {
+  padding: 22px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: #f7f9fd;
+  overflow-wrap: anywhere;
+}
+
+.company-card h3 {
+  margin-top: 0;
+  color: #123c91;
+}
+
+.company-card dt {
+  font-weight: 700;
+  margin-top: 12px;
+}
+
+.company-card dd {
+  margin: 4px 0 0;
+  color: #64748b;
+}
+.companies-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.company-list-section {
+  order: 1;
+}
+
+.company-admin-section {
+  order: 2;
+}

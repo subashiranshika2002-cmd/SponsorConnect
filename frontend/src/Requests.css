@@ -1,0 +1,70 @@
+.request-form {
+  display: grid;
+  gap: 16px;
+  max-width: 650px;
+}
+
+.request-form label {
+  margin: 0;
+}
+
+.request-form select,
+.request-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 9px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: #172033;
+  font: inherit;
+}
+
+.request-form textarea {
+  resize: vertical;
+}
+
+.request-form select:focus,
+.request-form textarea:focus {
+  outline: 3px solid #dbeafe;
+  border-color: #285ac2;
+}
+
+.request-list {
+  display: grid;
+  gap: 20px;
+}
+
+.request-card {
+  padding: 24px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: #f7f9fd;
+  overflow-wrap: anywhere;
+}
+
+.request-card h3 {
+  margin-top: 14px;
+  color: #123c91;
+}
+
+.request-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #dbeafe;
+  color: #123c91;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.request-card summary {
+  cursor: pointer;
+  color: #2455bc;
+  font-weight: 600;
+}
+
+.request-card details p {
+  white-space: pre-wrap;
+}
