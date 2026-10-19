@@ -12,6 +12,7 @@ const authRoutes = require("./routes/authRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 const User = require("./models/User");
 const requestRoutes = require("./routes/requestRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(express.json({ limit: "100kb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/requests", requestRoutes);
+app.use("/api/messages", messageRoutes);
 app.get("/", (_req, res) => {
   res.json({
     message: "SponsorConnect API is running"

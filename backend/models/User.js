@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      maxlength: 100
+      maxlength: 100,
     },
     email: {
       type: String,
@@ -14,21 +14,26 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      maxlength: 254
+      maxlength: 254,
     },
     password: {
       type: String,
       required: true,
-      select: false
+      select: false,
     },
     role: {
-  type: String,
-  enum: ["user", "company", "admin"],
-  default: "user"
-}
+      type: String,
+      enum: ["user", "company", "admin"],
+      default: "user",
+    },
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

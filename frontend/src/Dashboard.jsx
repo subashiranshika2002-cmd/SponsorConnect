@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./Dashboard.css";
 import Companies from "./Companies";
 import Requests from "./Requests";
+import Messages from "./Messages";
 
 const pages = [
   "Overview",
@@ -88,17 +89,13 @@ function Dashboard({ user, token, onLogout })  {
   <Companies user={user} token={token} />
 )}
 
-        {activePage === "My requests" && (
-  <Requests user={user} token={token} />
-)} (
-          <section className="dashboard-section">
-            <h2>Your sponsorship requests</h2>
-            <p>
-              We will connect this page to your submitted proposals
-              and their progress.
-            </p>
-          </section>
-        )
+               {activePage === "My requests" && (
+          <Requests user={user} token={token} />
+        )}
+
+        {activePage === "Messages" && (
+          <Messages user={user} token={token} />
+        )} 
 
         {activePage === "Messages" && (
           <section className="dashboard-section">
