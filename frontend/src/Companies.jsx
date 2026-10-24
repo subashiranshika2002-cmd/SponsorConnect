@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./Companies.css";
 
 const API_URL = "http://localhost:5000/api/companies";
@@ -25,10 +25,15 @@ function Companies({ user, token }) {
   const [form, setForm] = useState({ ...emptyForm });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [actionError, setActionError] = useState("");
   const [listError, setListError] = useState("");
   const [formError, setFormError] = useState("");
   const [message, setMessage] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const nameInput = useRef(null);
+  const busy = saving || deletingId !== null;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -80,15 +85,69 @@ function Companies({ user, token }) {
     }));
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-    setSaving(true);
+  function resetForm() {
+    setEditingId(null);
+    setForm({ ...emptyForm });
     setFormError("");
+  }
+
+  function startEditing(company) {
+    setEditingId(company._id);
+    setForm(Object.fromEntries(
+      Object.keys(emptyForm).map((field) => [field, company[field] || ""])
+    ));
+    setFormError("");
+    setActionError("");
+    setMessage("");
+    nameInput.current?.focus();
+  }
+
+  async function handleDelete(company) {
+    if (busy || !window.confirm(`Delete "${company.name}"? This cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingId(company._id);
+    setActionError("");
     setMessage("");
 
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
+      const response = await fetch(`${API_URL}/${company._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to delete company");
+      }
+
+      setCompanies((previous) => previous.filter((item) => item._id !== company._id));
+      if (editingId === company._id) resetForm();
+      setMessage("Company deleted successfully.");
+    } catch (error) {
+      setActionError(
+        error.name === "TimeoutError"
+          ? "Request timed out. Reload the list before trying again."
+          : error.message || "Check that the backend is running."
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    if (busy) return;
+    setSaving(true);
+    setFormError("");
+    setActionError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(editingId ? `${API_URL}/${editingId}` : API_URL, {
+        method: editingId ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -100,11 +159,11 @@ function Companies({ user, token }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to add company");
+        throw new Error(data.message || (editingId ? "Unable to update company" : "Unable to add company"));
       }
 
-      setForm({ ...emptyForm });
-      setMessage("Company added successfully.");
+      resetForm();
+      setMessage(editingId ? "Company updated successfully." : "Company added successfully.");
       setRefresh((previous) => previous + 1);
     } catch (error) {
       setFormError(
@@ -121,17 +180,18 @@ function Companies({ user, token }) {
     <div className="companies-page">
       {user.role === "admin" && (
         <section className="dashboard-section company-admin-section">
-          <h2>Add company</h2>
+          <h2>{editingId ? "Edit company" : "Add company"}</h2>
           <p>Enter the company’s public contact details.</p>
 
           <form onSubmit={handleSubmit}>
-            <fieldset disabled={saving} className="company-form">
+            <fieldset disabled={busy} className="company-form">
               {fields.map((field) => (
                 <label key={field.name} htmlFor={`company-${field.name}`}>
                   {field.label}
                   {field.required ? " *" : ""}
 
                   <input
+                    ref={field.name === "name" ? nameInput : undefined}
                     id={`company-${field.name}`}
                     name={field.name}
                     type={
@@ -166,9 +226,16 @@ function Companies({ user, token }) {
                 />
               </label>
 
-              <button type="submit" className="primary-button">
-                {saving ? "Saving..." : "Add company"}
-              </button>
+              <div className="company-form-actions">
+                <button type="submit" className="primary-button">
+                  {saving ? "Saving..." : editingId ? "Save changes" : "Add company"}
+                </button>
+                {editingId && (
+                  <button type="button" className="text-button" onClick={resetForm}>
+                    Cancel edit
+                  </button>
+                )}
+              </div>
             </fieldset>
           </form>
 
@@ -176,14 +243,14 @@ function Companies({ user, token }) {
             <p className="notice error" role="alert">{formError}</p>
           )}
 
-          {message && (
-            <p className="notice success" role="status">{message}</p>
-          )}
         </section>
       )}
 
       <section className="dashboard-section company-list-section">
         <h2>Sponsorship companies</h2>
+
+        {message && <p className="notice success" role="status">{message}</p>}
+        {actionError && <p className="notice error" role="alert">{actionError}</p>}
 
         {loading && <p role="status">Loading companies...</p>}
 
@@ -236,6 +303,28 @@ function Companies({ user, token }) {
                     </>
                   )}
                 </dl>
+                {user.role === "admin" && (
+                  <div className="company-card-actions">
+                    <button
+                      type="button"
+                      className="text-button"
+                      disabled={busy}
+                      onClick={() => startEditing(company)}
+                      aria-label={`Edit ${company.name}`}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="company-delete-button"
+                      disabled={busy}
+                      onClick={() => handleDelete(company)}
+                      aria-label={`Delete ${company.name}`}
+                    >
+                      {deletingId === company._id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                )}
               </article>
             ))}
           </div>

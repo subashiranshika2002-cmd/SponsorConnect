@@ -52,7 +52,7 @@ async function requireAuth(req, res, next) {
 function requireAdmin(req, res, next) {
   if (req.user?.role !== "admin") {
     return res.status(403).json({
-      message: "Only admins can add companies"
+      message: "Only admins can manage companies"
     });
   }
 

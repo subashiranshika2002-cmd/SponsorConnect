@@ -1,4 +1,7 @@
+const mongoose = require("mongoose");
 const Company = require("../models/Company");
+const SponsorshipRequest = require("../models/SponsorshipRequest");
+const User = require("../models/User");
 
 async function getCompanies(_req, res, next) {
   try {
@@ -15,8 +18,12 @@ async function getCompanies(_req, res, next) {
   }
 }
 
-async function createCompany(req, res, next) {
+async function saveCompany(req, res, next, isUpdate) {
   try {
+    if (isUpdate && !mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid company ID" });
+    }
+
     const body = req.body || {};
     const companyData = {};
 
@@ -69,10 +76,20 @@ async function createCompany(req, res, next) {
       }
     }
 
-    const company = await Company.create(companyData);
+    const company = isUpdate
+      ? await Company.findOneAndUpdate(
+          { _id: req.params.id, isActive: true },
+          { $set: companyData },
+          { new: true, runValidators: true }
+        )
+      : await Company.create(companyData);
 
-    return res.status(201).json({
-      message: "Company added successfully",
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    return res.status(isUpdate ? 200 : 201).json({
+      message: isUpdate ? "Company updated successfully" : "Company added successfully",
       company
     });
   } catch (error) {
@@ -86,4 +103,49 @@ async function createCompany(req, res, next) {
   }
 }
 
-module.exports = { getCompanies, createCompany };
+function createCompany(req, res, next) {
+  return saveCompany(req, res, next, false);
+}
+
+function updateCompany(req, res, next) {
+  return saveCompany(req, res, next, true);
+}
+
+async function deleteCompany(req, res, next) {
+  try {
+    const id = req.params.id;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid company ID" });
+    }
+
+    const company = await Company.findOne({ _id: id, isActive: true });
+
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    const [hasRequests, hasUsers] = await Promise.all([
+      SponsorshipRequest.exists({ company: id }),
+      User.exists({ company: id })
+    ]);
+
+    if (hasRequests || hasUsers) {
+      return res.status(409).json({
+        message: "Cannot delete this company because it has linked sponsorship requests or user accounts."
+      });
+    }
+
+    const deletedCompany = await Company.findOneAndDelete({ _id: id, isActive: true });
+
+    if (!deletedCompany) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    return res.json({ message: "Company deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { getCompanies, createCompany, updateCompany, deleteCompany };
