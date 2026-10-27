@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import Dashboard from "./Dashboard";
+import loginImage from "./assets/sponser.png";
 
 const API_URL = "http://localhost:5000/api/auth";
 
@@ -101,6 +102,11 @@ function App() {
         <div className="brand-content">
           <span className="eyebrow">CONNECTIONS THAT MATTER</span>
           <h1>Build relationships.<br />Create opportunities.</h1>
+          <img
+  className="sponsor-login-image"
+  src={loginImage}
+  alt="A team collaborating in an office on sponsorship opportunities"
+/>
           <p>
             A shared space for sponsorships, professional contacts,
             and meaningful partnerships.
