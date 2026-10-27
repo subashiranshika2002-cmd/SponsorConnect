@@ -13,14 +13,52 @@ async function readResponse(response) {
   return data;
 }
 
+
+
+
+
 function Conversation({ conversation, user, token }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  // Free message templates for organizers and company managers.
+const messageTemplates = {
+  meeting:
+    "Hello,\n\nWe would like to arrange a meeting to discuss our sponsorship proposal. Please let us know a suitable date and time.\n\nThank you.",
+
+  contact:
+    "Hello,\n\nCould you please share the contact details of the person responsible for sponsorship enquiries?\n\nThank you.",
+
+  thanks:
+    "Hello,\n\nThank you for your response and for considering our proposal. We appreciate your time and support.",
+
+  followUp:
+    "Hello,\n\nI am following up on our sponsorship proposal. Please let us know if you need any further details.\n\nThank you.",
+};
+
+function useTemplate(event) {
+  const selectedTemplate = event.target.value;
+
+  if (!selectedTemplate) return;
+
+  if (
+    text.trim() &&
+    !window.confirm("Replace your current message with this template?")
+  ) {
+    event.target.value = "";
+    return;
+  }
+
+  setText(messageTemplates[selectedTemplate]);
+  event.target.value = "";
+}
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [sendError, setSendError] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [instruction, setInstruction] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [draftError, setDraftError] = useState("");
 
   const currentUserId = String(user.user_id || user._id || "");
 
@@ -65,7 +103,47 @@ function Conversation({ conversation, user, token }) {
 
     return () => controller.abort();
   }, [conversation._id, token, refresh]);
+async function generateDraft() {
+  if (!instruction.trim() || generating) return;
 
+  if (
+    text.trim() &&
+    !window.confirm("Replace your current message with an AI draft?")
+  ) {
+    return;
+  }
+
+  setGenerating(true);
+  setDraftError("");
+
+  try {
+    const response = await fetch("http://localhost:5000/api/ai/draft", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ instruction: instruction.trim() }),
+      signal: AbortSignal.timeout(35000),
+    });
+
+    const data = await readResponse(response);
+
+    if (typeof data.draft !== "string" || !data.draft.trim()) {
+      throw new Error("No draft was returned.");
+    }
+
+    setText(data.draft);
+  } catch (error) {
+    setDraftError(
+      error.name === "TimeoutError"
+        ? "Draft generation timed out. Please try again."
+        : error.message || "Unable to generate a draft."
+    );
+  } finally {
+    setGenerating(false);
+  }
+}
   async function sendMessage(event) {
     event.preventDefault();
 
@@ -171,6 +249,48 @@ function Conversation({ conversation, user, token }) {
           })}
         </div>
       )}
+      <div className="sc-ai-assistant">
+  <label htmlFor="ai-instruction">What would you like to say?</label>
+
+  <textarea
+    id="ai-instruction"
+    value={instruction}
+    onChange={(event) => setInstruction(event.target.value)}
+    maxLength={1000}
+    rows={2}
+    placeholder="Example: Ask the company for a meeting."
+    disabled={generating || sending}
+  />
+
+  <button
+    type="button"
+    className="text-button"
+    onClick={generateDraft}
+    disabled={generating || sending || !instruction.trim()}
+  >
+    {generating ? "Writing draft..." : "Help me write"}
+  </button>
+
+  {draftError && (
+    <p className="notice error" role="alert">
+      {draftError}
+    </p>
+  )}
+</div>
+<label htmlFor="message-template">Choose a message template</label>
+
+<select
+  id="message-template"
+  defaultValue=""
+  onChange={useTemplate}
+  disabled={sending}
+>
+  <option value="">Select a template</option>
+  <option value="meeting">Ask for a meeting</option>
+  <option value="contact">Request contact details</option>
+  <option value="thanks">Say thank you</option>
+  <option value="followUp">Follow up on a proposal</option>
+</select>
 
       <form className="sc-chat-form" onSubmit={sendMessage}>
         <label htmlFor="chat-message">Your message</label>
