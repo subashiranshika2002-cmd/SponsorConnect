@@ -147,5 +147,34 @@ async function deleteCompany(req, res, next) {
     next(error);
   }
 }
+function updateCompany(req, res, next) {
+  const companyId = req.params.id;
+
+  // FIX: Validate the company ID before checking ownership.
+  if (!mongoose.isValidObjectId(companyId)) {
+    return res.status(400).json({
+      message: "Invalid company ID"
+    });
+  }
+
+  // FIX: Admins can edit any company.
+  const isAdmin = req.user?.role === "admin";
+
+  // FIX: Company managers can edit only their assigned company.
+  // The assignment comes from the authenticated database user,
+  // not from information submitted in the request body.
+  const isOwnCompany =
+    req.user?.role === "company" &&
+    req.user.company &&
+    String(req.user.company).toLowerCase() === companyId.toLowerCase();
+
+  if (!isAdmin && !isOwnCompany) {
+    return res.status(403).json({
+      message: "You can edit only your assigned company."
+    });
+  }
+
+  return saveCompany(req, res, next, true);
+}
 
 module.exports = { getCompanies, createCompany, updateCompany, deleteCompany };

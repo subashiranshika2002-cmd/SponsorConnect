@@ -34,6 +34,21 @@ function Companies({ user, token }) {
   const [refresh, setRefresh] = useState(0);
   const nameInput = useRef(null);
   const busy = saving || deletingId !== null;
+  // FIX: Identify the manager's assigned company.
+const isAdmin = user.role === "admin";
+const assignedCompanyId =
+  typeof user.company === "string"
+    ? user.company
+    : user.company?._id;
+
+function canEditCompany(company) {
+  return (
+    isAdmin ||
+    (user.role === "company" &&
+      assignedCompanyId &&
+      String(assignedCompanyId) === String(company._id))
+  );
+}
 
   useEffect(() => {
     const controller = new AbortController();
@@ -178,7 +193,7 @@ function Companies({ user, token }) {
 
   return (
     <div className="companies-page">
-      {user.role === "admin" && (
+      {(isAdmin || (user.role === "company" && editingId)) && (
         <section className="dashboard-section company-admin-section">
           <h2>{editingId ? "Edit company" : "Add company"}</h2>
           <p>Enter the company’s public contact details.</p>
@@ -303,28 +318,34 @@ function Companies({ user, token }) {
                     </>
                   )}
                 </dl>
-                {user.role === "admin" && (
-                  <div className="company-card-actions">
-                    <button
-                      type="button"
-                      className="text-button"
-                      disabled={busy}
-                      onClick={() => startEditing(company)}
-                      aria-label={`Edit ${company.name}`}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="company-delete-button"
-                      disabled={busy}
-                      onClick={() => handleDelete(company)}
-                      aria-label={`Delete ${company.name}`}
-                    >
-                      {deletingId === company._id ? "Deleting..." : "Delete"}
-                    </button>
-                  </div>
-                )}
+               {/* FIX: Show Edit only for admins or this company's manager. */}
+{canEditCompany(company) && (
+  <div className="company-card-actions">
+    <button
+      type="button"
+      className="text-button"
+      disabled={busy}
+      onClick={() => startEditing(company)}
+      aria-label={`Edit ${company.name}`}
+    >
+      Edit
+    </button>
+
+    {/* FIX: Delete remains restricted to admins. */}
+    {isAdmin && (
+      <button
+        type="button"
+        className="company-delete-button"
+        disabled={busy}
+        onClick={() => handleDelete(company)}
+        aria-label={`Delete ${company.name}`}
+      >
+        {deletingId === company._id ? "Deleting..." : "Delete"}
+      </button>
+    )}
+  </div>
+)}
+              
               </article>
             ))}
           </div>
