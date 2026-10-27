@@ -13,12 +13,15 @@ const companyRoutes = require("./routes/companyRoutes");
 const User = require("./models/User");
 const requestRoutes = require("./routes/requestRoutes");
 const messageRoutes = require("./routes/messageRoutes");
-
+const aiRoutes = require("./routes/aiRoutes");
 const app = express();
 
+// Allow the frontend to connect and read JSON before handling routes.
 app.use(cors());
 app.use(express.json({ limit: "100kb" }));
 
+// AI writing assistant route
+app.use("/api/ai", aiRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/requests", requestRoutes);
@@ -79,3 +82,4 @@ async function startServer() {
 }
 
 startServer();
+;
