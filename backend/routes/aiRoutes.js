@@ -7,6 +7,12 @@ const router = express.Router();
 // Only signed-in users can request a draft.
 router.post("/draft", requireAuth, async (req, res) => {
   const instruction = req.body?.instruction;
+  // Only normal users can use AI drafting.
+if (req.user.role !== "user") {
+  return res.status(403).json({
+    message: "The AI writing assistant is available only to users."
+  });
+}
 
   if (
     typeof instruction !== "string" ||
