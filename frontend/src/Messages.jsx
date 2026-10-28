@@ -3,6 +3,18 @@ import "./Messages.css";
 
 const API_URL = "http://localhost:5000/api/messages";
 
+// Free templates do not require an AI API payment.
+const messageTemplates = {
+  meeting:
+    "Hello,\n\nWe would like to arrange a meeting to discuss our sponsorship proposal. Please let us know a suitable date and time.\n\nThank you.",
+  contact:
+    "Hello,\n\nCould you please share the contact details of the person responsible for sponsorship enquiries?\n\nThank you.",
+  thanks:
+    "Hello,\n\nThank you for your response and for considering our proposal. We appreciate your time and support.",
+  followUp:
+    "Hello,\n\nI am following up on our sponsorship proposal. Please let us know if you need any further details.\n\nThank you.",
+};
+
 async function readResponse(response) {
   const data = await response.json();
 
@@ -13,44 +25,9 @@ async function readResponse(response) {
   return data;
 }
 
-
-
-
-
 function Conversation({ conversation, user, token }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-  // Free message templates for organizers and company managers.
-const messageTemplates = {
-  meeting:
-    "Hello,\n\nWe would like to arrange a meeting to discuss our sponsorship proposal. Please let us know a suitable date and time.\n\nThank you.",
-
-  contact:
-    "Hello,\n\nCould you please share the contact details of the person responsible for sponsorship enquiries?\n\nThank you.",
-
-  thanks:
-    "Hello,\n\nThank you for your response and for considering our proposal. We appreciate your time and support.",
-
-  followUp:
-    "Hello,\n\nI am following up on our sponsorship proposal. Please let us know if you need any further details.\n\nThank you.",
-};
-
-function useTemplate(event) {
-  const selectedTemplate = event.target.value;
-
-  if (!selectedTemplate) return;
-
-  if (
-    text.trim() &&
-    !window.confirm("Replace your current message with this template?")
-  ) {
-    event.target.value = "";
-    return;
-  }
-
-  setText(messageTemplates[selectedTemplate]);
-  event.target.value = "";
-}
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -61,6 +38,13 @@ function useTemplate(event) {
   const [draftError, setDraftError] = useState("");
 
   const currentUserId = String(user.user_id || user._id || "");
+
+  // FIX: Only normal users can access writing assistance.
+  const canUseAssistant = user.role === "user";
+
+  // FIX: Prevent sending or replacing text while a draft is generating.
+  const composerDisabled =
+    loading || sending || generating || Boolean(loadError);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -103,51 +87,84 @@ function useTemplate(event) {
 
     return () => controller.abort();
   }, [conversation._id, token, refresh]);
-async function generateDraft() {
-  if (!instruction.trim() || generating) return;
 
-  if (
-    text.trim() &&
-    !window.confirm("Replace your current message with an AI draft?")
-  ) {
-    return;
-  }
+  function handleTemplateChange(event) {
+    const template = messageTemplates[event.target.value];
 
-  setGenerating(true);
-  setDraftError("");
+    // Reset the dropdown so the same template can be selected again.
+    event.target.value = "";
 
-  try {
-    const response = await fetch("http://localhost:5000/api/ai/draft", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ instruction: instruction.trim() }),
-      signal: AbortSignal.timeout(35000),
-    });
+    if (!canUseAssistant || composerDisabled || !template) return;
 
-    const data = await readResponse(response);
-
-    if (typeof data.draft !== "string" || !data.draft.trim()) {
-      throw new Error("No draft was returned.");
+    if (
+      text.trim() &&
+      !window.confirm("Replace your current message with this template?")
+    ) {
+      return;
     }
 
-    setText(data.draft);
-  } catch (error) {
-    setDraftError(
-      error.name === "TimeoutError"
-        ? "Draft generation timed out. Please try again."
-        : error.message || "Unable to generate a draft."
-    );
-  } finally {
-    setGenerating(false);
+    setText(template);
+    setDraftError("");
   }
-}
+
+  async function generateDraft() {
+    if (
+      !canUseAssistant ||
+      composerDisabled ||
+      !instruction.trim()
+    ) {
+      return;
+    }
+
+    if (
+      text.trim() &&
+      !window.confirm("Replace your current message with an AI draft?")
+    ) {
+      return;
+    }
+
+    setGenerating(true);
+    setDraftError("");
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/ai/draft",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            instruction: instruction.trim(),
+          }),
+          signal: AbortSignal.timeout(35000),
+        }
+      );
+
+      const data = await readResponse(response);
+
+      if (typeof data.draft !== "string" || !data.draft.trim()) {
+        throw new Error("No draft was returned.");
+      }
+
+      // Drafts remain editable and are not sent automatically.
+      setText(data.draft.trim().slice(0, 2000));
+    } catch (error) {
+      setDraftError(
+        error.name === "TimeoutError"
+          ? "Draft generation timed out. Please try again."
+          : error.message || "Unable to generate a draft."
+      );
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   async function sendMessage(event) {
     event.preventDefault();
 
-    if (!text.trim() || sending) return;
+    if (!text.trim() || composerDisabled) return;
 
     setSending(true);
     setSendError("");
@@ -201,7 +218,7 @@ async function generateDraft() {
         <button
           type="button"
           className="text-button"
-          disabled={loading || sending}
+          disabled={loading || sending || generating}
           onClick={() => setRefresh((value) => value + 1)}
         >
           Refresh chat
@@ -249,49 +266,60 @@ async function generateDraft() {
           })}
         </div>
       )}
-      <div className="sc-ai-assistant">
-  <label htmlFor="ai-instruction">What would you like to say?</label>
 
-  <textarea
-    id="ai-instruction"
-    value={instruction}
-    onChange={(event) => setInstruction(event.target.value)}
-    maxLength={1000}
-    rows={2}
-    placeholder="Example: Ask the company for a meeting."
-    disabled={generating || sending}
-  />
+      {/* FIX: One assistant section, visible only to normal users. */}
+      {canUseAssistant && (
+        <div className="sc-ai-assistant">
+          <label htmlFor="ai-instruction">
+            What would you like to say?
+          </label>
 
-  <button
-    type="button"
-    className="text-button"
-    onClick={generateDraft}
-    disabled={generating || sending || !instruction.trim()}
-  >
-    {generating ? "Writing draft..." : "Help me write"}
-  </button>
+          <textarea
+            id="ai-instruction"
+            value={instruction}
+            onChange={(event) => setInstruction(event.target.value)}
+            maxLength={1000}
+            rows={2}
+            placeholder="Example: Ask the company for a meeting."
+            disabled={composerDisabled}
+          />
 
-  {draftError && (
-    <p className="notice error" role="alert">
-      {draftError}
-    </p>
-  )}
-</div>
-<label htmlFor="message-template">Choose a message template</label>
+          <button
+            type="button"
+            className="text-button"
+            onClick={generateDraft}
+            disabled={composerDisabled || !instruction.trim()}
+          >
+            {generating ? "Writing draft..." : "Help me write"}
+          </button>
 
-<select
-  id="message-template"
-  defaultValue=""
-  onChange={useTemplate}
-  disabled={sending}
->
-  <option value="">Select a template</option>
-  <option value="meeting">Ask for a meeting</option>
-  <option value="contact">Request contact details</option>
-  <option value="thanks">Say thank you</option>
-  <option value="followUp">Follow up on a proposal</option>
-</select>
+          {draftError && (
+            <p className="notice error" role="alert">
+              {draftError}
+            </p>
+          )}
 
+          {/* FIX: Templates are inside the same user-only section. */}
+          <label htmlFor="message-template">
+            Choose a free message template
+          </label>
+
+          <select
+            id="message-template"
+            defaultValue=""
+            onChange={handleTemplateChange}
+            disabled={composerDisabled}
+          >
+            <option value="">Select a template</option>
+            <option value="meeting">Ask for a meeting</option>
+            <option value="contact">Request contact details</option>
+            <option value="thanks">Say thank you</option>
+            <option value="followUp">Follow up on a proposal</option>
+          </select>
+        </div>
+      )}
+
+      {/* FIX: Normal messaging stays available to all participants. */}
       <form className="sc-chat-form" onSubmit={sendMessage}>
         <label htmlFor="chat-message">Your message</label>
 
@@ -302,16 +330,14 @@ async function generateDraft() {
           maxLength={2000}
           rows={3}
           placeholder="Discuss your sponsorship proposal..."
-          disabled={sending || loading || Boolean(loadError)}
+          disabled={composerDisabled}
           required
         />
 
         <button
           type="submit"
           className="primary-button"
-          disabled={
-            sending || loading || Boolean(loadError) || !text.trim()
-          }
+          disabled={composerDisabled || !text.trim()}
         >
           {sending ? "Sending..." : "Send message"}
         </button>
@@ -388,7 +414,10 @@ function Messages({ user, token }) {
   if (error) {
     return (
       <section className="dashboard-section">
-        <p className="notice error" role="alert">{error}</p>
+        <p className="notice error" role="alert">
+          {error}
+        </p>
+
         <button
           type="button"
           className="text-button"
