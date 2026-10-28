@@ -237,13 +237,47 @@ fieldset:disabled button {
     padding: 28px;
   }
 }
-/* Login illustration in the left introduction panel */
-.sponsor-login-image {
-  display: block;
-  width: 100%;
-  max-width: 620px;
-  height: auto;
-  margin: 28px auto 0;
-  border-radius: 18px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+/* Shared image behind both the introduction and login form. */
+.auth-layout.auth-image-background {
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      rgba(15, 52, 128, 0.72),
+      rgba(32, 44, 67, 0.86)
+    ),
+    url("./assets/sponser.png") center / cover no-repeat;
+}
+
+/* Remove the panels' solid backgrounds. */
+.auth-image-background > .brand-panel,
+.auth-image-background > .form-panel {
+  background: transparent;
+}
+
+/* White text remains readable over the image. */
+.auth-image-background .brand,
+.auth-image-background .brand-content h1,
+.auth-image-background .form-card h2,
+.auth-image-background .form-card label {
+  color: #ffffff;
+}
+
+.auth-image-background .eyebrow,
+.auth-image-background .brand-content p,
+.auth-image-background .brand-footer,
+.auth-image-background .subtitle,
+.auth-image-background .switch-text,
+.auth-image-background .password-hint {
+  color: #dce8ff;
+}
+
+.auth-image-background .form-card .text-button {
+  color: #1561e3;
+}
+
+/* Keep the input fields readable and within the form width. */
+.auth-image-background .form-card input {
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #2551b1;
 }
