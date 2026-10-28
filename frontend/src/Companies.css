@@ -67,3 +67,51 @@
 .company-admin-section {
   order: 2;
 }
+/* NEW: Responsive controls for searching and browsing companies. */
+.company-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 16px;
+  margin: 24px 0 16px;
+}
+
+.company-toolbar label {
+  min-width: 0;
+  margin: 0;
+}
+
+.company-toolbar input,
+.company-toolbar select {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 9px;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: #172033;
+  font: inherit;
+}
+
+.company-toolbar input:focus,
+.company-toolbar select:focus {
+  outline: 3px solid #dbeafe;
+  border-color: #285ac2;
+}
+
+.company-toolbar > button {
+  min-height: 44px;
+}
+
+@media (max-width: 900px) {
+  .company-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .company-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

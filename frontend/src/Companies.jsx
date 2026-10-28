@@ -34,7 +34,56 @@ function Companies({ user, token }) {
   const [refresh, setRefresh] = useState(0);
   const nameInput = useRef(null);
   const busy = saving || deletingId !== null;
-  // FIX: Identify the manager's assigned company.
+// NEW: Controls for searching, filtering and sorting companies.
+const [search, setSearch] = useState("");
+const [addressFilter, setAddressFilter] = useState("");
+const [sortOrder, setSortOrder] = useState("az");
+const [expandedId, setExpandedId] = useState(null);
+
+// NEW: Build filter options from saved company addresses.
+const addressOptions = [
+  ...new Set(
+    companies
+      .map((company) => company.address?.trim())
+      .filter(Boolean)
+  ),
+].sort((a, b) => a.localeCompare(b));
+
+// NEW: Search and filter without changing the original companies array.
+const visibleCompanies = companies
+  .filter((company) => {
+    const keyword = search.trim().toLowerCase();
+
+    const searchableText = [
+      company.name,
+      company.description,
+      company.email,
+      company.address,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch = searchableText.includes(keyword);
+
+    const matchesAddress =
+      !addressFilter ||
+      company.address?.trim() === addressFilter;
+
+    return matchesSearch && matchesAddress;
+  })
+  .sort((a, b) =>
+    sortOrder === "za"
+      ? b.name.localeCompare(a.name)
+      : a.name.localeCompare(b.name)
+  );
+
+function clearCompanyFilters() {
+  setSearch("");
+  setAddressFilter("");
+  setSortOrder("az");
+}
+// FIX: Identify the manager's assigned company.
 const isAdmin = user.role === "admin";
 const assignedCompanyId =
   typeof user.company === "string"
@@ -263,6 +312,70 @@ function canEditCompany(company) {
 
       <section className="dashboard-section company-list-section">
         <h2>Sponsorship companies</h2>
+        {/* NEW: Company search, address filter and sorting controls. */}
+<div className="company-toolbar">
+  <label htmlFor="company-search">
+    Search companies
+    <input
+      id="company-search"
+      type="search"
+      placeholder="Name, description, email or address"
+      value={search}
+      onChange={(event) => setSearch(event.target.value)}
+      maxLength={150}
+    />
+  </label>
+
+  <label htmlFor="company-address-filter">
+    Filter by address
+    <select
+      id="company-address-filter"
+      value={addressFilter}
+      onChange={(event) => setAddressFilter(event.target.value)}
+    >
+      <option value="">All addresses</option>
+
+      {addressOptions.map((address) => (
+        <option key={address} value={address}>
+          {address}
+        </option>
+      ))}
+    </select>
+  </label>
+
+  <label htmlFor="company-sort">
+    Sort companies
+    <select
+      id="company-sort"
+      value={sortOrder}
+      onChange={(event) => setSortOrder(event.target.value)}
+    >
+      <option value="az">Name: A–Z</option>
+      <option value="za">Name: Z–A</option>
+    </select>
+  </label>
+
+  <button
+    type="button"
+    className="text-button"
+    onClick={clearCompanyFilters}
+  >
+    Clear filters
+  </button>
+</div>
+
+{!loading && !listError && (
+  <p role="status">
+    Showing {visibleCompanies.length} of {companies.length} companies.
+  </p>
+)}
+
+{!loading &&
+  !listError &&
+  companies.length > 0 &&
+  visibleCompanies.length === 0 && (
+    <p>No companies match your search. Try clearing the filters.</p>
+  )}
 
         {message && <p className="notice success" role="status">{message}</p>}
         {actionError && <p className="notice error" role="alert">{actionError}</p>}
@@ -288,36 +401,51 @@ function canEditCompany(company) {
 
         {!loading && !listError && (
           <div className="company-grid">
-            {companies.map((company) => (
+          {visibleCompanies.map((company) => (
               <article className="company-card" key={company._id}>
                 <h3>{company.name}</h3>
                 {company.description && <p>{company.description}</p>}
+{/* NEW: Display contact information when details are expanded. */}
+<button
+  type="button"
+  className="text-button"
+  aria-expanded={expandedId === company._id}
+  aria-controls={`company-details-${company._id}`}
+  onClick={() =>
+    setExpandedId((previous) =>
+      previous === company._id ? null : company._id
+    )
+  }
+>
+  {expandedId === company._id ? "Hide details" : "View details"}
+</button>
 
-                <dl>
-                  <dt>Email</dt>
-                  <dd>{company.email}</dd>
+<div
+  id={`company-details-${company._id}`}
+  hidden={expandedId !== company._id}
+>
+  <dl>
+    <dt>Email</dt>
+    <dd>{company.email || "Not provided"}</dd>
 
-                  {company.phone && (
-                    <>
-                      <dt>Phone</dt>
-                      <dd>{company.phone}</dd>
-                    </>
-                  )}
+    <dt>Phone</dt>
+    <dd>{company.phone || "Not provided"}</dd>
 
-                  {company.website && (
-                    <>
-                      <dt>Website</dt>
-                      <dd>{company.website}</dd>
-                    </>
-                  )}
+    <dt>Website</dt>
+    <dd>{company.website || "Not provided"}</dd>
 
-                  {company.address && (
-                    <>
-                      <dt>Address</dt>
-                      <dd>{company.address}</dd>
-                    </>
-                  )}
-                </dl>
+    <dt>Address</dt>
+    <dd>{company.address || "Not provided"}</dd>
+
+    <dt>Sponsorship interests</dt>
+    <dd>
+      {company.sponsorshipInterests?.length
+        ? company.sponsorshipInterests.join(", ")
+        : "Not provided"}
+    </dd>
+  </dl>
+</div>
+                
                {/* FIX: Show Edit only for admins or this company's manager. */}
 {canEditCompany(company) && (
   <div className="company-card-actions">
