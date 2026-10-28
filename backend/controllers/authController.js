@@ -37,7 +37,8 @@ async function register(req, res, next) {
       Buffer.byteLength(password, "utf8") > 72
     ) {
       return res.status(400).json({
-        message: "Password must contain at least 8 characters and at most 72 bytes"
+        message:
+          "Password must contain at least 8 characters and at most 72 bytes"
       });
     }
 
@@ -53,10 +54,13 @@ async function register(req, res, next) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // FIX: Save the new account to MongoDB.
+    // Public registration always creates a normal user.
     await User.create({
       full_name: full_name.trim(),
       email: normalizedEmail,
-      password: hashedPassword
+      password: hashedPassword,
+      role: "user"
     });
 
     return res.status(201).json({
@@ -69,7 +73,7 @@ async function register(req, res, next) {
       });
     }
 
-    next(error);
+    return next(error);
   }
 }
 
@@ -123,11 +127,15 @@ async function login(req, res, next) {
         user_id: userId,
         full_name: user.full_name,
         email: user.email,
-        role: user.role
+        role: user.role,
+
+        // FIX: Include the assigned company for frontend Edit controls.
+        company: user.company ? String(user.company) : null
       }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 }
+
 module.exports = { register, login };

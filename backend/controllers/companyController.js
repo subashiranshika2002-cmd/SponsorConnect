@@ -106,67 +106,27 @@ async function saveCompany(req, res, next, isUpdate) {
 function createCompany(req, res, next) {
   return saveCompany(req, res, next, false);
 }
-
-function updateCompany(req, res, next) {
-  return saveCompany(req, res, next, true);
-}
-
-async function deleteCompany(req, res, next) {
-  try {
-    const id = req.params.id;
-
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({ message: "Invalid company ID" });
-    }
-
-    const company = await Company.findOne({ _id: id, isActive: true });
-
-    if (!company) {
-      return res.status(404).json({ message: "Company not found" });
-    }
-
-    const [hasRequests, hasUsers] = await Promise.all([
-      SponsorshipRequest.exists({ company: id }),
-      User.exists({ company: id })
-    ]);
-
-    if (hasRequests || hasUsers) {
-      return res.status(409).json({
-        message: "Cannot delete this company because it has linked sponsorship requests or user accounts."
-      });
-    }
-
-    const deletedCompany = await Company.findOneAndDelete({ _id: id, isActive: true });
-
-    if (!deletedCompany) {
-      return res.status(404).json({ message: "Company not found" });
-    }
-
-    return res.json({ message: "Company deleted successfully" });
-  } catch (error) {
-    next(error);
-  }
-}
 function updateCompany(req, res, next) {
   const companyId = req.params.id;
 
-  // FIX: Validate the company ID before checking ownership.
+  // FIX: Reject invalid IDs before checking ownership.
   if (!mongoose.isValidObjectId(companyId)) {
     return res.status(400).json({
       message: "Invalid company ID"
     });
   }
 
-  // FIX: Admins can edit any company.
   const isAdmin = req.user?.role === "admin";
 
-  // FIX: Company managers can edit only their assigned company.
-  // The assignment comes from the authenticated database user,
-  // not from information submitted in the request body.
+  // FIX: Use the company assigned to the authenticated database user.
+  const assignedCompanyId =
+    req.user?.company?._id || req.user?.company;
+
   const isOwnCompany =
     req.user?.role === "company" &&
-    req.user.company &&
-    String(req.user.company).toLowerCase() === companyId.toLowerCase();
+    assignedCompanyId &&
+    String(assignedCompanyId).toLowerCase() ===
+      companyId.toLowerCase();
 
   if (!isAdmin && !isOwnCompany) {
     return res.status(403).json({
@@ -176,5 +136,69 @@ function updateCompany(req, res, next) {
 
   return saveCompany(req, res, next, true);
 }
+// FIX: Restore company deletion and protect linked records.
+async function deleteCompany(req, res, next) {
+  try {
+    // Only admins can delete companies.
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        message: "Only admins can delete companies"
+      });
+    }
 
-module.exports = { getCompanies, createCompany, updateCompany, deleteCompany };
+    const id = req.params.id;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid company ID"
+      });
+    }
+
+    const company = await Company.findOne({
+      _id: id,
+      isActive: true
+    });
+
+    if (!company) {
+      return res.status(404).json({
+        message: "Company not found"
+      });
+    }
+
+    // Preserve companies referenced by proposals or user accounts.
+    const [hasRequests, hasUsers] = await Promise.all([
+      SponsorshipRequest.exists({ company: id }),
+      User.exists({ company: id })
+    ]);
+
+    if (hasRequests || hasUsers) {
+      return res.status(409).json({
+        message:
+          "Cannot delete this company because it has linked sponsorship requests or user accounts."
+      });
+    }
+
+    const deletedCompany = await Company.findOneAndDelete({
+      _id: id,
+      isActive: true
+    });
+
+    if (!deletedCompany) {
+      return res.status(404).json({
+        message: "Company not found"
+      });
+    }
+
+    return res.json({
+      message: "Company deleted successfully"
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+module.exports = {
+  getCompanies,
+  createCompany,
+  updateCompany,
+  deleteCompany
+};
