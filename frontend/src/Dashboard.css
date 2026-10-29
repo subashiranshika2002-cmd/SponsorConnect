@@ -174,3 +174,200 @@
     padding: 24px;
   }
 }
+.overview-illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 24px 0;
+  border-radius: 20px;
+}
+/* Larger dashboard text */
+.dashboard-layout {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.dashboard-layout .dashboard-sidebar h2 {
+  color: #ffffff;
+  font-size: 26px;
+  text-decoration: none;
+}
+
+.dashboard-layout .dashboard-sidebar .nav-item {
+  font-size: 19px;
+  padding: 15px 16px;
+}
+
+.dashboard-layout .dashboard-logout {
+  font-size: 18px;
+}
+
+.dashboard-layout .dashboard-main {
+  min-width: 0;
+}
+
+.dashboard-layout .dashboard-header h1 {
+  font-size: clamp(30px, 3vw, 42px);
+}
+
+.dashboard-layout .dashboard-user {
+  max-width: 100%;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+/* Overview layout */
+.sc-overview {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* Blue welcome banner */
+.sc-overview .sc-overview-banner {
+  margin: 0;
+  padding: clamp(24px, 3vw, 40px);
+  border-radius: 20px;
+  background: linear-gradient(120deg, #1646a0, #0b214c);
+  color: #ffffff;
+}
+
+.sc-overview-banner h2 {
+  margin: 0 0 16px;
+  color: #ffffff;
+  font-size: clamp(26px, 2.5vw, 38px);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.sc-overview-banner p {
+  margin: 0 0 24px;
+  color: #edf3ff;
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+.sc-overview-banner .primary-button {
+  width: auto;
+  max-width: 100%;
+  min-height: 52px;
+  padding: 14px 24px;
+  background: #2455bc;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sc-overview-banner .primary-button:hover {
+  background: #1b449b;
+}
+
+.sc-overview-banner .primary-button span {
+  margin-left: 12px;
+}
+
+/* One panel containing illustration and live journey text */
+.sc-journey-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #e1e9f5;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(18, 48, 100, 0.06);
+}
+
+.sc-journey-art {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #f5f9ff;
+}
+
+/* Contain preserves the illustration's lettering */
+.sc-journey-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 460px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.sc-journey-content {
+  min-width: 0;
+  padding: clamp(24px, 2.5vw, 36px);
+  align-self: center;
+}
+
+.sc-journey-content h2 {
+  margin: 0 0 26px;
+  color: #102650;
+  font-size: clamp(24px, 2vw, 30px);
+  line-height: 1.3;
+}
+
+/* Numbered steps remain real, selectable text */
+.sc-journey-steps {
+  counter-reset: journey;
+  display: grid;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sc-journey-steps li {
+  counter-increment: journey;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  color: #21365a;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.sc-journey-steps li::before {
+  content: counter(journey);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2455bc;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* Stack the picture and steps when space is limited */
+@media (max-width: 1100px) {
+  .sc-journey-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-journey-art img {
+    max-height: 340px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sc-overview-banner p {
+    font-size: 18px;
+  }
+
+  .sc-overview-banner .primary-button {
+    width: 100%;
+  }
+
+  .sc-journey-content {
+    padding: 24px 20px;
+  }
+
+  .sc-journey-steps li {
+    font-size: 17px;
+    gap: 12px;
+  }
+}
