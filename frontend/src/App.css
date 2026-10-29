@@ -1,83 +1,4 @@
-.auth-layout {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.brand-panel {
-  background: linear-gradient(145deg, #123c91, #071b43);
-  color: white;
-  padding: 48px 10%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 64px;
-}
-
-.brand {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  margin: 0;
-}
-
-.eyebrow {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-}
-
-.brand-content .eyebrow {
-  color: #a8caff;
-}
-
-.brand-content h1 {
-  font-size: clamp(36px, 4vw, 58px);
-  line-height: 1.12;
-  letter-spacing: -1.5px;
-  margin: 20px 0;
-}
-
-.brand-content p {
-  max-width: 420px;
-  color: #d1def5;
-  font-size: 18px;
-  line-height: 1.7;
-}
-
-.brand-footer {
-  color: #b7c9e9;
-  font-size: 14px;
-}
-
-.form-panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 56px 28px;
-  background: #f7f9fd;
-}
-
-.form-card {
-  width: 100%;
-  max-width: 420px;
-}
-
-.form-card .eyebrow {
-  color: #285ac2;
-}
-
-.form-card h2 {
-  font-size: 34px;
-  margin: 12px 0;
-  letter-spacing: -1px;
-}
-
-.subtitle {
-  color: #64748b;
-  margin-bottom: 32px;
-}
-
+/* Shared form styles used by the application */
 fieldset {
   margin: 0;
   padding: 0;
@@ -93,6 +14,7 @@ label {
 }
 
 input {
+  box-sizing: border-box;
   width: 100%;
   margin-top: 9px;
   padding: 14px 16px;
@@ -129,7 +51,7 @@ button:focus-visible {
   font-weight: 700;
 }
 
-.primary-button:hover {
+.primary-button:hover:not(:disabled) {
   background: #18449f;
 }
 
@@ -139,23 +61,12 @@ fieldset:disabled button {
   opacity: 0.65;
 }
 
-.switch-text {
-  text-align: center;
-  margin-top: 26px;
-  color: #64748b;
-}
-
 .text-button {
   border: 0;
   background: transparent;
   color: #2455bc;
   font-weight: 700;
   padding: 4px;
-}
-
-.password-hint {
-  color: #64748b;
-  font-size: 14px;
 }
 
 .notice {
@@ -175,6 +86,249 @@ fieldset:disabled button {
   color: #166534;
 }
 
+/* Login and registration page */
+.auth-layout.sc-auth {
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+
+  /* Closer columns with room for larger introduction text */
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 32px;
+  padding: clamp(24px, 4vw, 64px);
+
+  color: #ffffff;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* The image is already dark.
+   A light white overlay makes it slightly brighter. */
+.auth-layout.auth-image-background.sc-auth {
+  background:
+    linear-gradient(
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.07)
+    ),
+    url("./assets/sponsor-background.png") center / cover no-repeat;
+  background-color: #0e2550;
+}
+
+.sc-auth *,
+.sc-auth *::before,
+.sc-auth *::after {
+  box-sizing: border-box;
+}
+
+/* Left introduction */
+.sc-auth .brand-panel {
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.sc-auth .brand {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(28px, 2.4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.sc-auth .brand-content {
+  padding: 24px 0;
+}
+
+.sc-auth .eyebrow {
+  display: block;
+  margin: 0;
+  color: #d0e0ff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+}
+
+.sc-auth .brand-content .eyebrow {
+  font-size: 16px;
+}
+
+/* Larger headline in the marked introduction area */
+.sc-auth .brand-content h1 {
+  margin: 18px 0 26px;
+  color: #ffffff;
+  font-size: clamp(42px, 4.6vw, 78px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -1.5px;
+  overflow-wrap: break-word;
+}
+
+.sc-auth .auth-highlight {
+  color: #b8d2ff;
+}
+
+.sc-auth .brand-content p {
+  max-width: 680px;
+  margin: 16px 0;
+  color: #f0f5ff;
+  font-size: clamp(20px, 1.5vw, 24px);
+  line-height: 1.6;
+}
+
+.sc-auth .brand-content .auth-lead {
+  color: #ffffff;
+  font-size: clamp(23px, 1.8vw, 30px);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.sc-auth .brand-footer {
+  margin: 0;
+  color: #e2eaff;
+  font-size: 16px;
+}
+
+/* Right form panel */
+.sc-auth .form-panel {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+}
+
+.sc-auth .form-card {
+  width: 100%;
+  max-width: 620px;
+  padding: clamp(26px, 3vw, 48px);
+  border: 1px solid rgba(168, 199, 255, 0.45);
+  border-radius: 24px;
+  background: rgba(8, 28, 65, 0.9);
+  box-shadow: 0 24px 70px rgba(0, 10, 35, 0.25);
+}
+
+.sc-auth .form-card h2 {
+  margin: 12px 0;
+  color: #ffffff;
+  font-size: clamp(32px, 3vw, 46px);
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -1px;
+}
+
+.sc-auth .form-card .subtitle {
+  margin: 0 0 30px;
+  color: #e2eaff;
+  font-size: 18px;
+}
+
+/* Larger form labels and inputs */
+.sc-auth label {
+  margin-bottom: 22px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.sc-auth input {
+  display: block;
+  width: 100%;
+  min-height: 58px;
+  margin-top: 10px;
+  padding: 15px 18px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #14284c;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.sc-auth input::placeholder {
+  color: #5c6c85;
+  opacity: 1;
+}
+
+.sc-auth input:focus {
+  border-color: #8bb7ff;
+  outline: 3px solid rgba(139, 183, 255, 0.3);
+  outline-offset: 2px;
+}
+
+.sc-auth .primary-button {
+  min-height: 58px;
+  margin-top: 6px;
+  padding: 15px 20px;
+  border-radius: 12px;
+  background: #2455bc;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 750;
+  transition: background-color 150ms ease;
+}
+
+.sc-auth .primary-button:hover:not(:disabled) {
+  background: #1b449b;
+}
+
+.sc-auth button:focus-visible {
+  outline: 3px solid #b9d3ff;
+  outline-offset: 4px;
+}
+
+.sc-auth .switch-text {
+  margin: 26px 0 0;
+  color: #e2eaff;
+  font-size: 17px;
+  text-align: center;
+}
+
+.sc-auth .text-button {
+  display: inline;
+  color: #b8d2ff;
+  font-size: inherit;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.sc-auth .text-button:hover:not(:disabled) {
+  color: #ffffff;
+}
+
+.sc-auth .password-hint {
+  color: #e2eaff;
+  font-size: 16px;
+}
+
+.sc-auth .notice {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.sc-auth .notice.error {
+  background: #fee2e2;
+  color: #8b1717;
+}
+
+.sc-auth .notice.success {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+/* Existing welcome and account styles */
 .welcome-page {
   min-height: 100vh;
   display: grid;
@@ -184,6 +338,7 @@ fieldset:disabled button {
 }
 
 .welcome-card {
+  box-sizing: border-box;
   width: 100%;
   max-width: 560px;
   padding: 40px;
@@ -211,73 +366,57 @@ fieldset:disabled button {
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 760px) {
-  .auth-layout {
+/* Tablet and mobile layout */
+@media (max-width: 960px) {
+  .auth-layout.sc-auth {
     grid-template-columns: 1fr;
-  }
-
-  .brand-panel {
-    padding: 28px;
     gap: 28px;
+    padding: 28px 20px;
   }
 
-  .brand-content h1 {
-    font-size: 36px;
+  .sc-auth .brand-panel {
+    gap: 20px;
   }
 
-  .brand-footer {
+  .sc-auth .brand-content {
+    padding: 8px 0;
+  }
+
+  .sc-auth .brand-content h1 {
+    font-size: clamp(36px, 6vw, 52px);
+  }
+
+  .sc-auth .brand-footer {
     display: none;
   }
+}
 
-  .form-panel {
-    padding: 36px 24px;
+@media (max-width: 480px) {
+  .auth-layout.sc-auth {
+    padding: 20px 14px;
+  }
+
+  .sc-auth .form-card {
+    padding: 26px 20px;
+    border-radius: 18px;
+  }
+
+  .sc-auth .brand-content h1 {
+    font-size: 36px;
+    letter-spacing: -1px;
+  }
+
+  .sc-auth .form-card h2 {
+    font-size: 32px;
+  }
+
+  .sc-auth .brand-content .eyebrow,
+  .sc-auth .form-card .eyebrow {
+    font-size: 12px;
+    letter-spacing: 1px;
   }
 
   .welcome-card {
     padding: 28px;
   }
-}
-/* Shared image behind both the introduction and login form. */
-.auth-layout.auth-image-background {
-  min-height: 100vh;
-  background:
-    linear-gradient(
-      rgba(15, 52, 128, 0.72),
-      rgba(32, 44, 67, 0.86)
-    ),
-    url("./assets/sponser.png") center / cover no-repeat;
-}
-
-/* Remove the panels' solid backgrounds. */
-.auth-image-background > .brand-panel,
-.auth-image-background > .form-panel {
-  background: transparent;
-}
-
-/* White text remains readable over the image. */
-.auth-image-background .brand,
-.auth-image-background .brand-content h1,
-.auth-image-background .form-card h2,
-.auth-image-background .form-card label {
-  color: #ffffff;
-}
-
-.auth-image-background .eyebrow,
-.auth-image-background .brand-content p,
-.auth-image-background .brand-footer,
-.auth-image-background .subtitle,
-.auth-image-background .switch-text,
-.auth-image-background .password-hint {
-  color: #dce8ff;
-}
-
-.auth-image-background .form-card .text-button {
-  color: #1561e3;
-}
-
-/* Keep the input fields readable and within the form width. */
-.auth-image-background .form-card input {
-  box-sizing: border-box;
-  background: #ffffff;
-  color: #2551b1;
 }

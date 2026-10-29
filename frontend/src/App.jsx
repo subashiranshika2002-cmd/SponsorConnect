@@ -95,18 +95,27 @@ function App() {
 }
 
   return (
-    <main className="auth-layout auth-image-background">
+    <main className="auth-layout auth-image-background sc-auth">
   <section className="brand-panel">
         <p className="brand">SponsorConnect</p>
+<div className="brand-content">
+  <span className="eyebrow">CONNECTIONS THAT MATTER</span>
 
-        <div className="brand-content">
-          <span className="eyebrow">CONNECTIONS THAT MATTER</span>
-          <h1>Build relationships.<br />Create opportunities.</h1>
-               <p>
-            A shared space for sponsorships, professional contacts,
-            and meaningful partnerships.
-          </p>
-        </div>
+  <h1>
+    Build relationships.
+    <br />
+    <span className="auth-highlight">Create opportunities.</span>
+  </h1>
+
+  <p className="auth-lead">
+    Connect your event with the right sponsors.
+  </p>
+
+  <p>
+    Discover companies, share proposals and keep every conversation together.
+  </p>
+</div>
+        
 
         <p className="brand-footer">Your next partnership starts here.</p>
       </section>
@@ -118,11 +127,10 @@ function App() {
           <h2>{isRegister ? "Create your account" : "Welcome back"}</h2>
 
           <p className="subtitle">
-            {isRegister
-              ? "Enter your details to get started."
-              : "Sign in to your account."}
-          </p>
-
+  {isRegister
+    ? "Create an account to begin your sponsorship journey."
+    : "Sign in to your SponsorConnect account."}
+</p>
           <form onSubmit={handleSubmit} aria-busy={loading}>
             <fieldset disabled={loading}>
               {isRegister && (
