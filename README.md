@@ -70,6 +70,64 @@ New accounts are registered as normal users. Administrator privileges and compan
 
 - Git and GitHub
 
+## Project Structure
+
+```text
+SponsorConnect/
+├── backend/
+│   ├── config/                   # Database configuration
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── companyController.js
+│   │   └── requestController.js
+│   ├── middleware/               # Authentication and upload validation
+│   ├── models/
+│   │   ├── Company.js
+│   │   ├── Message.js
+│   │   ├── SponsorshipRequest.js
+│   │   └── User.js
+│   ├── routes/
+│   │   ├── aiRoutes.js
+│   │   ├── authRoutes.js
+│   │   ├── companyRoutes.js
+│   │   ├── messageRoutes.js
+│   │   └── requestRoutes.js
+│   ├── scripts/                  # Admin and company account assignment
+│   ├── services/
+│   │   └── emailService.js
+│   ├── tests/                    # Backend tests
+│   ├── .env                      # Local configuration; excluded from Git
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── server.js                 # Backend entry point
+│   └── testConnection.js
+├── frontend/
+│   ├── src/
+│   │   ├── assets/               # Login background and overview images
+│   │   ├── App.css
+│   │   ├── App.jsx               # Login and registration
+│   │   ├── Companies.css
+│   │   ├── Companies.jsx         # Company directory and management
+│   │   ├── Dashboard.css
+│   │   ├── Dashboard.jsx         # Navigation and overview
+│   │   ├── index.css
+│   │   ├── main.jsx              # React entry point
+│   │   ├── Messages.css
+│   │   ├── Messages.jsx          # Conversations and writing assistance
+│   │   ├── Requests.css
+│   │   └── Requests.jsx          # Sponsorship proposals
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── README.md                 # Frontend documentation
+│   └── vite.config.js
+├── .gitignore
+└── README.md                     # Main project documentation
+```
+
+Dependency folders (`node_modules`) and generated frontend build files (`frontend/dist`) are omitted from this overview. They are created by installation and build commands.
+
 ## Installation and Setup
 
 ### 1. Clone the repository
