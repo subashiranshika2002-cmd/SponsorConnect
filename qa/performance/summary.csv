@@ -1,0 +1,3 @@
+Label,# Samples,Average,Min,Max,Std. Dev.,Error %,Throughput,Received KB/sec,Sent KB/sec,Avg. Bytes
+Get Companies API,50,80,63,126,11.24,0.000%,10.30291,33.41,1.33,3321.0
+TOTAL,50,80,63,126,11.24,0.000%,10.30291,33.41,1.33,3321.0
