@@ -1,0 +1,241 @@
+{
+  "info": {
+    "_postman_id": "2ef6ce51-25d2-48af-8e4e-bb499c2eb571",
+    "name": "SponsorConnect QA Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55547679",
+    "_collection_link": "https://go.postman.co/collection/55547679-2ef6ce51-25d2-48af-8e4e-bb499c2eb571?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "API01 - Admin Login",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"API01 - Login returns HTTP 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"API01 - Response contains authentication token\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.token).to.be.a(\"string\").and.not.be.empty;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"subashiranshika2002@gmail.com\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API02 - Get Companies",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"API02 - Returns HTTP 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"API02 - Companies array is returned\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.companies).to.be.an(\"array\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/companies",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "companies"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API03 - Create Company",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"API03 - Company created successfully\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.test(\"API03 - Company ID is returned\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.company._id).to.be.a(\"string\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_0dl4}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"QA Automation Test Company\",\r\n  \"description\": \"Company created for automated API testing.\",\r\n  \"email\": \"qa-company@example.com\",\r\n  \"phone\": \"0770000000\",\r\n  \"website\": \"https://example.com\",\r\n  \"address\": \"Colombo\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/companies",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "companies"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API04 - Update Company",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"API04 - Company updated successfully\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"API04 - Updated company name is correct\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.company.name).to.eql(\r\n        \"QA Automation Updated Company\"\r\n    );\r\n});\r\n\r\npm.test(\"API04 - Updated address is correct\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.company.address).to.eql(\"Matara\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_0dl4}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"QA Automation Updated Company\",\r\n  \"description\": \"Company updated during API testing.\",\r\n  \"email\": \"qa-company@example.com\",\r\n  \"phone\": \"0770000000\",\r\n  \"website\": \"https://example.com\",\r\n  \"address\": \"Matara\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/companies/6b06c1e6125b980da8e89886",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "companies",
+            "6b06c1e6125b980da8e89886"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API05 - Delete Company",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"API05 - Company deleted successfully\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"API05 - Success message is correct\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.message).to.eql(\r\n        \"Company deleted successfully\"\r\n    );\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_0dl4}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/companies/6b06c1e6125b980da8e89886",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "companies",
+            "6b06c1e6125b980da8e89886"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "json_web_token_0dl4",
+      "secret": true
+    }
+  ]
+}

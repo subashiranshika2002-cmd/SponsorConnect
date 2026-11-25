@@ -1,0 +1,44 @@
+name: SponsorConnect QA Testing
+
+on:
+  push:
+    branches:
+      - main
+      - qa/software-testing
+
+  pull_request:
+    branches:
+      - main
+      - qa/software-testing
+
+jobs:
+  automated-testing:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Jest unit tests
+        run: npx jest tests/deleteCompany.test.js --runInBand --coverage --collectCoverageFrom=controllers/companyController.js
+
+      - name: Run Cucumber BDD tests
+        run: npx cucumber-js features/companyDeletion.feature --require features/step_definitions/companyDeletion.steps.js
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/coverage/
